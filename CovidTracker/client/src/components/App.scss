@@ -1,0 +1,30 @@
+.app {
+  .menu {
+    display: flex;
+    justify-content: space-between;
+    width: 60%;
+
+    button {
+      font-size: 15px;
+    }
+  }
+
+  .notifications {
+    .MuiAlert-root {
+      display: flex;
+      align-items: center;
+
+      .MuiAlert-icon {
+        padding: 0px;
+
+        svg {
+          font-size: 70px;
+        }
+      }
+
+      .message {
+        white-space: pre-wrap;
+      }
+    }
+  }
+}
