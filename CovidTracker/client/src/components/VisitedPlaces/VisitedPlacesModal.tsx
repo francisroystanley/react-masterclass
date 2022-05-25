@@ -136,8 +136,6 @@ const VisitedPlacesModal = (props: TProps) => {
 
     const isInvalid = Object.values(errorForm).some(val => val === true);
 
-    console.log(isInvalid);
-
     if (isInvalid) return;
 
     // Send API request

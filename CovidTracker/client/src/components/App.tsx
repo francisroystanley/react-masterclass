@@ -3,22 +3,27 @@ import { Link as RouterLink } from "react-router-dom";
 import { Alert, AlertTitle, Button, Container, Link } from "@mui/material";
 import { Add, Info, Report, Restore } from "@mui/icons-material";
 
-import { TModalReason, TNotification } from "../types";
-
-import "./App.scss";
 import VisitedPlacesModal from "./VisitedPlaces/VisitedPlacesModal";
 import SocialInteractionsModal from "./SocialInteractions/SocialInteractionsModal";
+import { useTypedDispatch, useTypedSelector } from "../hooks";
+import { TModalList, TModalReason, TNotification } from "../types";
+import { fetchVisitedPlaces } from "../slices/visitedPlace";
+import { fetchSocialInteractions } from "../slices/socialInteraction";
 
-type modalListType = "socialInteractions" | "visitedPlaces";
+import "./App.scss";
 
-type stateType = {
-  notifications: TNotification[];
+type TState = {
+  notifications?: TNotification[];
   socialInteractionsModalOpen: boolean;
   visitedPlacesModalOpen: boolean;
 };
 
 const App = () => {
-  const [state, setState] = useState<stateType>({ notifications: [], socialInteractionsModalOpen: false, visitedPlacesModalOpen: false });
+  const dispatch = useTypedDispatch();
+  const socialInteractionState = useTypedSelector(state => state.socialInteraction);
+  const visitedPlaceState = useTypedSelector(state => state.visitedPlace);
+  // const notifications = [socialInteractionState.notification, visitedPlaceState.notification];
+  const [state, setState] = useState<TState>({ notifications: [], socialInteractionsModalOpen: false, visitedPlacesModalOpen: false });
 
   const getIcon = (severity: string) => {
     switch (severity) {
@@ -31,46 +36,52 @@ const App = () => {
     }
   };
 
-  const handleModalClose = (modal: modalListType, reason: TModalReason) => {
+  const handleModalClose = (modal: TModalList, reason: TModalReason) => {
     if (reason === "backdropClick") return;
 
     setState(prevState => ({ ...prevState, [`${modal}ModalOpen`]: false }));
   };
 
   const hideNotification = (index: number) => {
-    const notifications = state.notifications.filter((notif, i) => i !== index);
+    const notifications = state.notifications?.filter((notif, i) => i !== index);
     setState(prevState => ({ ...prevState, notifications }));
   };
 
-  const openModal = (modal: modalListType) => {
+  const openModal = (modal: TModalList) => {
     setState(prevState => ({ ...prevState, [`${modal}ModalOpen`]: true }));
   };
 
   useEffect(() => {
-    const notifications: TNotification[] = [
-      {
-        title: "You have been exposed!",
-        message: "You have been exposed to a crowded place for the last 14 days.\nTry to avoid crowded places to minimized your exposure risk.",
-        severity: "error"
-      },
-      {
-        title: "You did not practice social distancing!",
-        message: "You did not practice social distancing for the last 14 days.\nStay at home and maintain 1-2 meters away from other people.",
-        severity: "error"
-      },
-      {
-        title: "Thank you!",
-        message: "Thank you for helping to stop spread the virus by staying home.",
-        severity: "success"
-      },
-      {
-        title: "Keep it up!",
-        message: "You are maintaining proper social distancing. Keep it up!",
-        severity: "success"
-      }
-    ];
-    setState(prevState => ({ ...prevState, notifications }));
-  }, []);
+    dispatch(fetchVisitedPlaces());
+    dispatch(fetchSocialInteractions());
+    // const notifications: TNotification[] = [
+    //   {
+    //     title: "You have been exposed!",
+    //     message: "You have been exposed to a crowded place for the last 14 days.\nTry to avoid crowded places to minimized your exposure risk.",
+    //     severity: "error"
+    //   },
+    //   {
+    //     title: "You did not practice social distancing!",
+    //     message: "You did not practice social distancing for the last 14 days.\nStay at home and maintain 1-2 meters away from other people.",
+    //     severity: "error"
+    //   },
+    //   {
+    //     title: "Thank you!",
+    //     message: "Thank you for helping to stop spread the virus by staying home.",
+    //     severity: "success"
+    //   },
+    //   {
+    //     title: "Keep it up!",
+    //     message: "You are maintaining proper social distancing. Keep it up!",
+    //     severity: "success"
+    //   }
+    // ];
+    // setState(prevState => ({ ...prevState, notifications }));
+  }, [dispatch]);
+
+  useEffect(() => {
+    console.log(visitedPlaceState, socialInteractionState);
+  }, [socialInteractionState, visitedPlaceState]);
 
   return (
     <Container className="app">
@@ -79,17 +90,17 @@ const App = () => {
         <Button variant="contained" startIcon={<Add />} onClick={() => openModal("socialInteractions")}>
           <span>Add Social Interaction</span>
         </Button>
-        <SocialInteractionsModal open={state.socialInteractionsModalOpen} onClose={(e, reason) => handleModalClose("socialInteractions", reason)} />
+        {state.socialInteractionsModalOpen && <SocialInteractionsModal open onClose={(e, reason) => handleModalClose("socialInteractions", reason)} />}
         <Button variant="contained" startIcon={<Add />} onClick={() => openModal("visitedPlaces")}>
           <span>Add Place Exposure</span>
         </Button>
-        <VisitedPlacesModal open={state.visitedPlacesModalOpen} onClose={(e, reason) => handleModalClose("visitedPlaces", reason)} />
+        {state.visitedPlacesModalOpen && <VisitedPlacesModal open onClose={(e, reason) => handleModalClose("visitedPlaces", reason)} />}
         <Button variant="contained" color="error" startIcon={<Restore />}>
           <span>Reset Data</span>
         </Button>
       </div>
       <div className="notifications mb-5">
-        {state.notifications.map((notif, i) => (
+        {state.notifications?.map((notif, i) => (
           <Alert className="mb-2" key={i} icon={getIcon(notif.severity)} variant="filled" severity={notif.severity} onClose={() => hideNotification(i)}>
             <AlertTitle>{notif.title}</AlertTitle>
             <div className="message">{notif.message}</div>
