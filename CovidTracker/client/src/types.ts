@@ -10,7 +10,7 @@ export type TNotification = {
 
 export type TModalList = "socialInteractions" | "visitedPlaces";
 
-export type TModalReason = "backdropClick" | "escapeKeyDown" | "closeButton";
+export type TModalReason = "backdropClick" | "escapeKeyDown" | "closeButton" | "cancelButton" | "saveButton" | "okButton";
 
 export type TVisitedPlace = {
   place: string;
@@ -20,8 +20,9 @@ export type TVisitedPlace = {
 };
 
 export type TVisitedPlaceState = {
-  visitedPlace: TMaybe<TVisitedPlace[]>;
+  visitedPlaces: TMaybe<TVisitedPlace[]>;
   notification: TMaybe<TNotification>;
+  totalCount: TMaybe<number>;
 };
 
 export type TVisitedPlaceForm = {
@@ -29,6 +30,11 @@ export type TVisitedPlaceForm = {
   date: TMaybe<string>;
   hours: TMaybe<number>;
   isCrowded: boolean;
+};
+
+export type TFetchVisitedPlaceResponse = {
+  visitedPlaces: TMaybe<TVisitedPlace[]>;
+  totalCount: TMaybe<number>;
 };
 
 export type TSocialInteraction = {
@@ -39,8 +45,9 @@ export type TSocialInteraction = {
 };
 
 export type TSocialInteractionState = {
-  socialInteraction: TMaybe<TSocialInteraction[]>;
+  socialInteractions: TMaybe<TSocialInteraction[]>;
   notification: TMaybe<TNotification>;
+  totalCount: TMaybe<number>;
 };
 
 export type TSocialInteractionForm = {
@@ -50,6 +57,16 @@ export type TSocialInteractionForm = {
   isSocialDistancing: boolean;
 };
 
+export type TFetchSocialInteractionResponse = {
+  socialInteractions: TMaybe<TSocialInteraction[]>;
+  totalCount: TMaybe<number>;
+};
+
 export type TRootState = ReturnType<typeof store.getState>;
 
 export type TDispatch = typeof store.dispatch;
+
+export type TFilterParam = {
+  page: TMaybe<number>;
+  pageSize: TMaybe<number>;
+};

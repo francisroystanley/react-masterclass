@@ -1,9 +1,19 @@
-import { useRef } from "react";
-import { DataGrid, GridColumns, GridRowId, GridRowsProp, useGridApiRef } from "@mui/x-data-grid";
+import { useEffect, useRef, useState } from "react";
+import { DataGrid, GridColumns, GridRowId, GridRowsProp, GridSortModel, useGridApiRef } from "@mui/x-data-grid";
 import { Button, Container } from "@mui/material";
 import { Add, Close, Delete, Edit, Save } from "@mui/icons-material";
 
+import { useTypedDispatch, useTypedSelector } from "../../hooks";
+
 import "./VisitedPlaces.scss";
+import { fetchVisitedPlaces } from "../../slices/visitedPlace";
+import { TFilterParam } from "../../types";
+
+type TState = {
+  isLoading: boolean;
+  filter: TFilterParam;
+  rows: GridRowsProp;
+};
 
 const VisitedPlaces = () => {
   const apiRef = useGridApiRef();
@@ -79,15 +89,21 @@ const VisitedPlaces = () => {
       }
     }
   ];
-  const rows: GridRowsProp = [
-    { id: 1, place: "Snow", date: new Date("11/2/2021"), hours: 3, isCrowded: false },
-    { id: 2, place: "Lannister", date: new Date("12/23/2021"), hours: 2, isCrowded: false },
-    { id: 3, place: "Los Angeles", date: new Date("1/25/2021"), hours: 4, isCrowded: true },
-    { id: 4, place: "Stark", date: new Date("8/9/2021"), hours: 1, isCrowded: false },
-    { id: 5, place: "Targaryen", date: new Date("9/16/2021"), hours: 0, isCrowded: true },
-    { id: 6, place: "Manila", date: new Date("9/1/2021"), hours: 10, isCrowded: false }
-  ];
+  const dispatch = useTypedDispatch();
   const editRow = useRef<GridRowId>("");
+  const [state, setState] = useState<TState>({ filter: { page: 0, pageSize: 5 }, isLoading: false, rows: [] });
+  const visitedPlaceState = useTypedSelector(state => state.visitedPlace);
+
+  const handleCancelClick = (id: GridRowId) => (event: React.MouseEvent) => {
+    event.stopPropagation();
+    editRow.current = "";
+    apiRef.current.setRowMode(id, "view");
+  };
+
+  const handleDeleteClick = (id: GridRowId) => (event: React.MouseEvent) => {
+    event.stopPropagation();
+    apiRef.current.updateRows([{ id, _action: "delete" }]);
+  };
 
   const handleEditClick = (id: GridRowId) => (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -101,23 +117,34 @@ const VisitedPlaces = () => {
   const handleSaveClick = (id: GridRowId) => async (event: React.MouseEvent) => {
     editRow.current = "";
     event.stopPropagation();
-    // Wait for the validation to run
     const isValid = await apiRef.current.commitRowChange(id);
     if (isValid) {
       apiRef.current.setRowMode(id, "view");
     }
   };
 
-  const handleDeleteClick = (id: GridRowId) => (event: React.MouseEvent) => {
-    event.stopPropagation();
-    apiRef.current.updateRows([{ id, _action: "delete" }]);
+  const handleSortChange = ([model]: GridSortModel) => {
+    let sortValue: undefined | string = undefined;
+
+    if (model) {
+      const { field, sort } = model;
+      const prefix = sort === "desc" ? "-" : "";
+      sortValue = prefix + field;
+    }
+
+    setState(prevState => ({ ...prevState, filter: { ...prevState.filter, sort: sortValue } }));
   };
 
-  const handleCancelClick = (id: GridRowId) => (event: React.MouseEvent) => {
-    event.stopPropagation();
-    editRow.current = "";
-    apiRef.current.setRowMode(id, "view");
-  };
+  useEffect(() => {
+    (async () => {
+      setState(prevState => ({ ...prevState, isLoading: true, rows: [] }));
+      await dispatch(fetchVisitedPlaces(state.filter));
+    })();
+  }, [dispatch, state.filter]);
+
+  useEffect(() => {
+    setState(prevState => ({ ...prevState, isLoading: false, rows: visitedPlaceState.visitedPlaces || [] }));
+  }, [visitedPlaceState.visitedPlaces]);
 
   return (
     <div className="visited-places">
@@ -129,15 +156,25 @@ const VisitedPlaces = () => {
             disableColumnFilter
             disableSelectionOnClick
             editMode="row"
+            getRowId={row => row._id}
+            loading={state.isLoading}
             onRowEditStart={(param, event) => (event.defaultMuiPrevented = true)}
             onRowEditStop={(param, event) => (event.defaultMuiPrevented = true)}
             onCellFocusOut={(param, event) => (event.defaultMuiPrevented = true)}
-            pageSize={5}
+            onPageChange={page => setState(prevState => ({ ...prevState, filter: { ...prevState.filter, page } }))}
+            onPageSizeChange={pageSize => setState(prevState => ({ ...prevState, filter: { ...prevState.filter, pageSize } }))}
+            onSortModelChange={handleSortChange}
+            page={state.filter.page!}
+            pageSize={state.filter.pageSize!}
             pagination
             paginationMode="server"
-            rows={rows}
-            rowsPerPageOptions={[5]}
+            rows={state.rows}
+            rowCount={visitedPlaceState.totalCount || 0}
+            rowsPerPageOptions={[5, 25, 100]}
             sortingMode="server"
+            sx={{
+              height: `${(state.rows.length || 1) * 52 + 111}px`
+            }}
           />
         </div>
         <Button variant="contained" startIcon={<Add />}>

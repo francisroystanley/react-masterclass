@@ -14,8 +14,8 @@ const Breadcrumb = () => {
 
     return (
       <Breadcrumbs>
-        {crumbs.map(crumb => (
-          <Link component={RouterLink} underline="hover" variant="h6" to={crumb.path}>
+        {crumbs.map((crumb, i) => (
+          <Link key={i} component={RouterLink} underline="hover" variant="h6" to={crumb.path}>
             {crumb.name}
           </Link>
         ))}

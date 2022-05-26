@@ -1,15 +1,17 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { AxiosRequestConfig } from "axios";
 
 import API from "../api";
-import { TSocialInteraction, TSocialInteractionState } from "../types";
+import { TFetchSocialInteractionResponse, TSocialInteraction, TSocialInteractionState } from "../types";
 
 const initialState: TSocialInteractionState = {
-  socialInteraction: null,
-  notification: null
+  socialInteractions: null,
+  notification: null,
+  totalCount: 0
 };
 
-const fetchSocialInteractions = createAsyncThunk("todos/fetchSocialInteractions", async () => {
-  const response = await API.get<TSocialInteraction[]>("/social-interactions");
+const fetchSocialInteractions = createAsyncThunk<TFetchSocialInteractionResponse, AxiosRequestConfig["params"]>("todos/fetchSocialInteractions", async params => {
+  const response = await API.get("/social-interactions", { params });
 
   return response.data;
 });
@@ -24,7 +26,8 @@ const socialInteractionSlice = createSlice({
   },
   extraReducers: builder => {
     builder.addCase(fetchSocialInteractions.fulfilled, (state, action) => {
-      state.socialInteraction = action.payload;
+      state.socialInteractions = action.payload.socialInteractions;
+      state.totalCount = action.payload.totalCount;
     });
   }
 });

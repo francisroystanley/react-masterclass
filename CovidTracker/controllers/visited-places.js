@@ -1,3 +1,5 @@
+const moment = require("moment");
+
 const { VisitedPlace } = require("../models");
 
 const createVisitedPlace = async (req, res, next) => {
@@ -34,9 +36,22 @@ const deleteVisitedPlace = async (req, res, next) => {
 
 const getVisitedPlaces = async (req, res, next) => {
   try {
-    const visitedPlaces = await VisitedPlace.find().sort({ date: -1 });
+    const { fromDate, page, pageSize, sort = { date: -1 }, toDate = new Date() } = req.query;
+    let filter = {
+      date: {
+        $lte: moment(toDate).endOf("day").toDate()
+      }
+    };
 
-    res.json(visitedPlaces);
+    if (fromDate) filter.date.$gte = moment(fromDate).startOf("day").toDate();
+
+    const visitedPlaces = await VisitedPlace.find(filter)
+      .skip(page * pageSize)
+      .limit(pageSize)
+      .sort(sort);
+    const totalCount = await VisitedPlace.count();
+
+    res.json({ visitedPlaces, totalCount });
   } catch (err) {
     console.error(err.message);
 

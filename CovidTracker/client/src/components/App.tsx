@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { Alert, AlertTitle, Button, Container, Link } from "@mui/material";
 import { Add, Info, Report, Restore } from "@mui/icons-material";
@@ -20,7 +20,15 @@ type TState = {
 
 const App = () => {
   const dispatch = useTypedDispatch();
+  const socialInteractionFilter = useMemo(() => ({
+    fromDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toLocaleDateString("en-CA"),
+    toDate: new Date().toLocaleDateString("en-CA")
+  }), []);
   const socialInteractionState = useTypedSelector(state => state.socialInteraction);
+  const visitedPlaceFilter = useMemo(() => ({
+    fromDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toLocaleDateString("en-CA"),
+    toDate: new Date().toLocaleDateString("en-CA")
+  }), []);
   const visitedPlaceState = useTypedSelector(state => state.visitedPlace);
   // const notifications = [socialInteractionState.notification, visitedPlaceState.notification];
   const [state, setState] = useState<TState>({ notifications: [], socialInteractionsModalOpen: false, visitedPlacesModalOpen: false });
@@ -52,8 +60,9 @@ const App = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchVisitedPlaces());
-    dispatch(fetchSocialInteractions());
+    (async () => {
+      await Promise.all([dispatch(fetchVisitedPlaces(visitedPlaceFilter)), dispatch(fetchSocialInteractions(socialInteractionFilter))]);
+    })();
     // const notifications: TNotification[] = [
     //   {
     //     title: "You have been exposed!",
@@ -77,11 +86,7 @@ const App = () => {
     //   }
     // ];
     // setState(prevState => ({ ...prevState, notifications }));
-  }, [dispatch]);
-
-  useEffect(() => {
-    console.log(visitedPlaceState, socialInteractionState);
-  }, [socialInteractionState, visitedPlaceState]);
+  }, [dispatch, socialInteractionFilter, visitedPlaceFilter]);
 
   return (
     <Container className="app">
@@ -107,10 +112,18 @@ const App = () => {
           </Alert>
         ))}
       </div>
-      <span className="me-3">Recent Visited Places</span>
-      <Link component={RouterLink} to="/visited-places">
-        View All
-      </Link>
+      <div>
+        <span className="me-3">Recent Visited Places</span>
+        <Link component={RouterLink} to="/visited-places">
+          View All
+        </Link>
+      </div>
+      <div>
+        <span className="me-3">Recent Social Interactions</span>
+        <Link component={RouterLink} to="/social-interactions">
+          View All
+        </Link>
+      </div>
     </Container>
   );
 };

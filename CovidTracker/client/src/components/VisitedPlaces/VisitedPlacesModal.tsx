@@ -1,36 +1,33 @@
 import { useEffect, useState } from "react";
-import { AutocompleteRenderInputParams, Checkbox, createFilterOptions, FilterOptionsState, Grid, TextField, Typography } from "@mui/material";
+import { AutocompleteRenderInputParams, Checkbox, Grid, TextField, Typography } from "@mui/material";
 
-import { useAutoComplete, useModal } from "../../hooks";
-import { TModalReason, TVisitedPlaceForm } from "../../types";
+import { useAutoComplete, useModal, useTypedDispatch } from "../../hooks";
+import { TModalReason, TVisitedPlace, TVisitedPlaceForm } from "../../types";
+import { addVisitedPlace } from "../../slices/visitedPlace";
 
 type TProps = {
   onClose: (event: {}, reason: TModalReason) => void;
   open: boolean;
 };
 
+type TPlaceOption = {
+  label: string;
+  value: string;
+};
+
 const VisitedPlacesModal = (props: TProps) => {
   const { onClose, open } = props;
+  const dispatch = useTypedDispatch();
   const today = new Date().toLocaleDateString("en-CA");
   const [errorForm, setErrorForm] = useState({ place: false, date: false, hours: false });
   const [form, setForm] = useState<TVisitedPlaceForm>({ place: null, date: today, hours: 0, isCrowded: false });
-  const placeOptions: string[] = [];
+  const placeOptions: TPlaceOption[] = [];
 
-  const filterOptions = (options: string[], params: FilterOptionsState<string>) => {
-    const filter = createFilterOptions<string>();
-    const filtered = filter(options, params);
-    let { inputValue } = params;
-    inputValue = inputValue.trim();
-    const isExisting = options.some(option => inputValue === option);
-
-    if (inputValue !== "" && !isExisting) {
-      filtered.push(inputValue);
+  const handleChange = (name: string, value: string | boolean | number | null) => {
+    if (name === "hours") {
+      value = value ? +value : null;
     }
 
-    return filtered;
-  };
-
-  const handleChange = (name: string, value: string | boolean | null) => {
     setForm(prevState => ({ ...prevState, [name]: value }));
     setErrorForm(prevState => ({ ...prevState, [name]: false }));
   };
@@ -48,7 +45,7 @@ const VisitedPlacesModal = (props: TProps) => {
         isInvalid = !form.date || new Date(form.date).getFullYear() < 1970 || new Date(form.date).getTime() > new Date().getTime();
         break;
       case "hours":
-        isInvalid = (!form.hours && form.hours !== 0) || form.hours < 0;
+        isInvalid = !form.hours || form.hours > 24 || form.hours < 0.5 || !/^\d{1,2}(\.5)?$/.test(form.hours.toString());
         break;
       default:
         return;
@@ -59,12 +56,11 @@ const VisitedPlacesModal = (props: TProps) => {
 
   const Autocomplete = useAutoComplete({
     clearOnBlur: true,
-    filterOptions,
     freeSolo: true,
     handleHomeEndKeys: true,
     selectOnFocus: true,
     onBlur: () => validateFields("place"),
-    onChange: (e, val) => handleChange("place", val),
+    onChange: (e, val) => handleChange("place", val?.inputValue || val?.label || val),
     options: placeOptions,
     renderInput,
     size: "small",
@@ -115,6 +111,7 @@ const VisitedPlacesModal = (props: TProps) => {
           value={form.hours}
           onBlur={() => validateFields("hours")}
           onChange={e => handleChange("hours", e.target.value)}
+          inputProps={{ min: 0.5, max: 24, step: 0.5 }}
           error={errorForm.hours}
         />
       </Grid>
@@ -131,15 +128,15 @@ const VisitedPlacesModal = (props: TProps) => {
     </Grid>
   );
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     Object.keys(errorForm).forEach(validateFields);
 
     const isInvalid = Object.values(errorForm).some(val => val === true);
 
     if (isInvalid) return;
 
-    // Send API request
-    console.log("Send API request...");
+    await dispatch(addVisitedPlace(form as TVisitedPlace));
+    onClose({}, "saveButton");
   };
 
   const modal = useModal({

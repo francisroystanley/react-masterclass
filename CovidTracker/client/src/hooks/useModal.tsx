@@ -29,7 +29,7 @@ const useModal = (props: TProps) => {
           </div>
           <div className="modal-body">{body}</div>
           <div className="modal-footer">
-            <Button startIcon={<Clear />} variant="contained" color="warning" onClick={() => onClose({}, "closeButton")}>
+            <Button startIcon={<Clear />} variant="contained" color="warning" onClick={() => onClose({}, "cancelButton")}>
               {cancelButtonLabel}
             </Button>
             <Button startIcon={<Save />} variant="contained" color="success" onClick={onSubmit}>
