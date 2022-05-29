@@ -10,6 +10,15 @@ router.route("/")
   .get(VisitedPlaceCtrl.getVisitedPlaces)
   .post(validatorMiddleware(createAndUpdateRules), VisitedPlaceCtrl.createVisitedPlace);
 
+router.route("/places")
+  .get(VisitedPlaceCtrl.getPlaces);
+
+router.route("/notification")
+  .get(VisitedPlaceCtrl.getNotification);
+
+router.route("/reset-data")
+  .post(VisitedPlaceCtrl.resetData);
+
 router.route("/:id")
   .get(VisitedPlaceCtrl.getVisitedPlaceById)
   .put(validatorMiddleware(createAndUpdateRules), VisitedPlaceCtrl.updateVisitedPlace)

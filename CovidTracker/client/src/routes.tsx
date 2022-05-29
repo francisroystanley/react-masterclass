@@ -1,6 +1,6 @@
 import App from "./components/App";
-import SocialInteractions from "./components/SocialInteractions/SocialInteractions";
-import VisitedPlaces from "./components/VisitedPlaces/VisitedPlaces";
+import { SocialInteractions } from "./components/SocialInteractions";
+import { VisitedPlaces } from "./components/VisitedPlaces";
 
 const routes = [
   { path: "/", name: "Dashboard", Element: App },

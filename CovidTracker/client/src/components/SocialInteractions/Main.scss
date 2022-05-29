@@ -1,0 +1,17 @@
+.social-interactions {
+  .filter-records {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    .label {
+      margin-bottom: 2px;
+    }
+  }
+
+  .table-container {
+    .bg-red {
+      background-color: rgb(255, 154, 154) !important;
+    }
+  }
+}

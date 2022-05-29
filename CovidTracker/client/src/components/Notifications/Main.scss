@@ -1,0 +1,18 @@
+.notifications {
+  .MuiAlert-root {
+    display: flex;
+    align-items: center;
+
+    .MuiAlert-icon {
+      padding: 0px;
+
+      svg {
+        font-size: 70px;
+      }
+    }
+
+    .message {
+      white-space: pre-wrap;
+    }
+  }
+}
