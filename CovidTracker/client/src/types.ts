@@ -37,7 +37,7 @@ export type TVisitedPlaceState = {
   places?: TAutoCompleteOption[];
   totalCount?: TMaybe<number>;
   visitedPlaces?: TMaybe<TVisitedPlaceWithId[]>;
-  visitedPlacesGrouped?: TMaybe<TResponseGrouped[]>;
+  visitedPlacesGrouped: TResponseGrouped[];
 };
 
 export type TVisitedPlaceForm = {
@@ -91,7 +91,7 @@ export type TSocialInteractionState = {
   names?: TAutoCompleteOption[];
   notification?: TMaybe<TNotification>;
   socialInteractions?: TMaybe<TSocialInteractionWithId[]>;
-  socialInteractionsGrouped?: TMaybe<TResponseGrouped[]>;
+  socialInteractionsGrouped?: TResponseGrouped[];
   totalCount?: TMaybe<number>;
 };
 

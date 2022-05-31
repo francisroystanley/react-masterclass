@@ -38,9 +38,7 @@ const Menu = () => {
       await Promise.all([dispatch(resetSocialInteractions()), dispatch(resetVisitedPlaces())]);
       Promise.all([
         dispatch(fetchSocialInteractionNotification()),
-        dispatch(fetchVisitedPlaceNotification()),
-        dispatch(fetchSocialInteractionsGrouped(filter)),
-        dispatch(fetchVisitedPlacesGrouped(filter))
+        dispatch(fetchVisitedPlaceNotification())
       ]);
     }
   };

@@ -14,7 +14,8 @@ import {
 } from "../types";
 
 const initialState: TVisitedPlaceState = {
-  totalCount: 0
+  totalCount: 0,
+  visitedPlacesGrouped: []
 };
 
 const addVisitedPlace = createAsyncThunk<TVisitedPlaceWithId, TVisitedPlace>("visitedPlaces/add", async data => {
@@ -83,6 +84,13 @@ const visitedPlaceSlice = createSlice({
 
     builder.addCase(fetchVisitedPlacePlaces.fulfilled, (state, action) => {
       state.places = action.payload;
+    });
+
+    builder.addCase(resetVisitedPlaces.fulfilled, (state, action) => {
+      state.places = undefined;
+      state.visitedPlaces = undefined;
+      state.visitedPlacesGrouped = [];
+      state.totalCount = 0;
     });
   }
 });

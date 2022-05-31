@@ -14,6 +14,7 @@ import {
 } from "../types";
 
 const initialState: TSocialInteractionState = {
+  socialInteractionsGrouped: [],
   totalCount: 0
 };
 
@@ -83,6 +84,13 @@ const socialInteractionSlice = createSlice({
 
     builder.addCase(fetchSocialInteractionNotification.fulfilled, (state, action) => {
       state.notification = action.payload;
+    });
+
+    builder.addCase(resetSocialInteractions.fulfilled, (state, action) => {
+      state.names = undefined;
+      state.socialInteractionsGrouped = [];
+      state.socialInteractions = undefined;
+      state.totalCount = 0;
     });
   }
 });
